@@ -1,7 +1,7 @@
 {
   "name": "closty",
   "version": "1.0.0",
-  "description": "Unauthorized sharing on Github or any other platform is prohibited.",
+  "description": "none",
   "main": "./src/index.ts",
   "author": "lency",
   "license": "MIT",
