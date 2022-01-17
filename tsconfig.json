@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ESNext",
+    "outDir": "./build/",
+    "sourceMap": false,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "incremental": false,
+    "strict": true,
+    "strictNullChecks": false,
+    "declaration": false,
+    "inlineSourceMap": false,
+    "resolveJsonModule": true,
+    "typeRoots": ["./node_modules/@types/"]
+  },
+  "include": ["./src/"],
+  "exclude": ["./node_modules/"]
+}

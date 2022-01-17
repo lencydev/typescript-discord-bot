@@ -1,0 +1,43 @@
+{
+  "name": "closty",
+  "version": "1.0.0",
+  "description": "Unauthorized sharing on Github or any other platform is prohibited.",
+  "main": "./src/index.ts",
+  "author": "lency",
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "start": "ts-node --transpile-only ./src/index.ts",
+    "start: dev": "ts-node-dev --transpile-only ./src/index.ts"
+  },
+  "dependencies": {
+    "canvas": "^2.8.0",
+    "chalk": "^4.1.2",
+    "discord.js": "^13.6.0",
+    "extract-colors": "^1.1.18",
+    "glob": "^7.2.0",
+    "moment": "^2.29.1",
+    "moment-duration-format": "^2.3.2",
+    "moment-timezone": "^0.5.33",
+    "mongoose": "^6.0.11",
+    "ms": "^2.1.3",
+    "node-fetch": "^3.1.0",
+    "path": "^0.12.7",
+    "pretty-ms": "^7.0.1",
+    "util": "^0.12.4"
+  },
+  "devDependencies": {
+    "@types/extract-colors": "^1.1.0",
+    "@types/glob": "^7.1.4",
+    "@types/moment-duration-format": "^2.2.3",
+    "@types/ms": "^0.7.31",
+    "@types/node": "^16.11.0",
+    "ts-node": "^10.3.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.4.4"
+  },
+  "engines": {
+    "node": ">= 16.9.0"
+  },
+  "keywords": []
+}
