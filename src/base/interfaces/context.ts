@@ -293,15 +293,15 @@ export default class Context {
         });
       },
 
-      list ({ ephemeral, value, array, embed }: { ephemeral?: boolean, value: number, array: any[], embed: MessageEmbed }) {
+      list ({ ephemeral = true, perPageData = 1, value, array, embed }: { ephemeral?: boolean, perPageData?: number, value: number, array: any[], embed: MessageEmbed }) {
 
         let page = 1;
         let checkPages;
   
         let first = 0;
-        let last = 5;
+        let last = perPageData;
   
-        let pages = Math.ceil(value / 5);
+        let pages = Math.ceil(value / perPageData);
 
         if (value < 1) return ctx.reply.error({ content: `Not enough data was found.` });
   
@@ -383,8 +383,8 @@ export default class Context {
       
                 page = page -1;
     
-                first = first -5;
-                last = last -5;
+                first = first -perPageData;
+                last = last -perPageData;
     
                 if (page == 1) {
             
@@ -427,8 +427,8 @@ export default class Context {
       
                 page = page +1;
     
-                first = first +5;
-                last = last +5;
+                first = first +perPageData;
+                last = last +perPageData;
     
                 if (page == pages) {
             
@@ -534,8 +534,8 @@ export default class Context {
       
                 page = page -1;
     
-                first = first -5;
-                last = last -5;
+                first = first -perPageData;
+                last = last -perPageData;
     
                 if (page == 1) {
             
@@ -576,8 +576,8 @@ export default class Context {
       
                 page = page +1;
     
-                first = first +5;
-                last = last +5;
+                first = first +perPageData;
+                last = last +perPageData;
     
                 if (page == pages) {
             
@@ -622,7 +622,7 @@ export default class Context {
       pagination ({ pages, fastSkip }: { pages: MessageEmbed[], fastSkip: boolean }) {
 
         let page = 0;
-        let checkPages
+        let checkPages;
 
         if (!fastSkip) {
 
