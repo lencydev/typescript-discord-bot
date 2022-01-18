@@ -101,7 +101,7 @@ import Client from '../../base/client';
 import Event from '../../base/structures/event';
 import Context from '../../base/interfaces/context';
 
-import { Message, MessageActionRow, MessageButton } from 'discord.js';
+import { Message } from 'discord.js';
 
 export default class extends Event {
 
