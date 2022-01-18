@@ -93,6 +93,7 @@ export default class extends Command {
 
       ctx.menu.list({
         ephemeral: !ephemeral || ephemeral == 'true' ? true : false,
+        perPageData: 5,
         value: data.length,
         array: dataArray.map((value, row) => `\`${row +1}.\` ${value}\n`),
         embed: new MessageEmbed({
