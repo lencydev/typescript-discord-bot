@@ -53,6 +53,7 @@ export default class extends Command {
 
     ctx.menu.list({
       ephemeral: !ephemeral || ephemeral == 'true' ? true : false,
+      perPageData: 5,
       value: ctx.client.guilds.cache.size,
       array: ctx.client.guilds.cache.sort(!type || type == 'added' ? (first: any, last: any) => last.joinedAt - first.joinedAt : (first, last) => last.memberCount - first.memberCount).map((value) => value).map((value) => value).map((guild, row) => `\`${row +1}.\` ${guild.vanityURLCode ? `[**${ctx.case.filter(guild.name)}**](https://discord.gg/${guild.vanityURLCode} 'https://discord.gg/${guild.vanityURLCode}')` : `**${ctx.case.filter(guild.name)}**`} (\`${guild.id}\`)\n\`•\` Owner: \`${ctx.case.filter(ctx.client.users.cache.get(guild.ownerId).tag)}\` (\`${guild.ownerId}\`)\n\`•\` Members: \`${ctx.case.number(guild.memberCount)}\`\n\`•\` Added: <t:${ctx.case.timestamp(guild.joinedAt)}:R>\n`),
       embed: new MessageEmbed({
