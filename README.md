@@ -32,16 +32,15 @@
       </li>    
     </ul>
   </li>
-</ol>
-
-# Starting The Project
-<ol dir="auto">
   <li>
-    Type <code>npm run start</code> into the terminal to start the project.
+    Starting the project.
     <ul dir="auto">
       <li>
-        Wait for the <code>LOGGED IN</code> message.
+        Type <code>npm run start</code> into the terminal to start the project.
         <ul dir="auto">
+          <li>
+            Wait for the <code>LOGGED IN</code> message.
+          </li>
           <li>
             Only developers can use commands for the first 1 minute.
           </li>
