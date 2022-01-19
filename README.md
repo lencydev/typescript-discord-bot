@@ -7,7 +7,7 @@
     Edit the config file.
     <ul dir="auto">
       <li>
-        Go to file <code>src/config.ts</code>
+        Go to file <code><a href="https://github.com/lencydev/typescript-discord-bot/blob/main/src/config.ts">config.ts</a></code>
       </li>
       <li>
         Fill in the required fields.
