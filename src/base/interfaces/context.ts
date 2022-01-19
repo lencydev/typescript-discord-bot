@@ -293,7 +293,7 @@ export default class Context {
         });
       },
 
-      list ({ ephemeral = true, perPageData = 1, fastSkip = false, value, array, embed }: { ephemeral?: boolean, perPageData?: number, fastSkip: boolean, value: number, array: any[], embed: MessageEmbed }) {
+      list ({ ephemeral = true, perPageData = 1, fastSkip = false, value, array, embed }: { ephemeral?: boolean, perPageData?: number, fastSkip?: boolean, value: number, array: any[], embed: MessageEmbed }) {
 
         let page = 1;
         let checkPages;
