@@ -293,230 +293,197 @@ export default class Context {
         });
       },
 
-      list ({ ephemeral = true, perPageData = 1, value, array, embed }: { ephemeral?: boolean, perPageData?: number, value: number, array: any[], embed: MessageEmbed }) {
+      list ({ ephemeral = true, perPageData = 1, fastSkip = false, value, array, embed }: { ephemeral?: boolean, perPageData?: number, fastSkip: boolean, value: number, array: any[], embed: MessageEmbed }) {
 
         let page = 1;
         let checkPages;
   
-        let first = 0;
-        let last = perPageData;
+        let firstIndex = 0;
+        let lastIndex = perPageData;
   
         let pages = Math.ceil(value / perPageData);
 
         if (value < 1) return ctx.reply.error({ content: `Not enough data was found.` });
   
-        if (!ephemeral) {
+        if (!fastSkip) {
 
-          if (page == pages) {
-  
-            checkPages = interaction.reply({ 
-              ephemeral: false,
-              embeds: [
-                embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
-              ],
-              components: [
-                new MessageActionRow({
-                  components: [
-                    new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
-                    new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: true }),
-                    new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
-                  ],
-                }),
-              ],
-            });
+          if (!ephemeral) {
+
+            if (page == pages) {
     
-          } else if (page !== pages) {
-        
-            checkPages = interaction.reply({
-              ephemeral: false,
-              embeds: [
-                embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
-              ],
-              components: [
-                new MessageActionRow({
-                  components: [
-                    new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
-                    new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
-                    new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
-                  ],
-                }),
-              ],
-            })
-          };
-          
-          checkPages.then(async () => {
-    
-            let fetch: any = await interaction.fetchReply();
-            let collector = fetch.createMessageComponentCollector({ componentType: 'BUTTON', time: 3 * 60 * 1000 });
-      
-            collector.on('end', async () => {
-    
-              interaction.editReply({
+              checkPages = interaction.reply({ 
+                ephemeral: false,
+                embeds: [
+                  embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                ],
                 components: [
                   new MessageActionRow({
                     components: [
                       new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
                       new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: true }),
-                      new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: true }),
+                      new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
                     ],
                   }),
                 ],
-              }).catch(() => null);
-            });
-    
-            collector.on('collect', async (button: any) => {
-
-              if (button.user.id !== interaction.user.id) {
-                
-                await button.deferUpdate();
-  
-                return button.followUp({ ephemeral: true, content: `${ctx.case.emoji(config.emoji.error)} You cannot use this button.` });
-              };
+              });
       
-              if (button.customId == 'delete') {
-            
-                await interaction.deleteReply();
-        
-                await button.deferUpdate();
-    
-              } else if (button.customId == 'previous') {
-      
-                page = page -1;
-    
-                first = first -perPageData;
-                last = last -perPageData;
-    
-                if (page == 1) {
-            
-                  interaction.editReply({
-                    embeds: [
-                      embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
-                    ],
-                    components: [
-                      new MessageActionRow({
-                        components: [
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
-                          new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
-                        ],
-                      }),
-                    ],
-                  });
-        
-                } else if (page !== 1) {
-        
-                  interaction.editReply({
-                    embeds: [
-                      embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
-                    ],
-                    components: [
-                      new MessageActionRow({
-                        components: [
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: false }),
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
-                          new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
-                        ],
-                      }),
-                    ],
-                  });
-                };
-    
-                  await button.deferUpdate();
-              
-              } else if (button.customId == 'next') {
-      
-                page = page +1;
-    
-                first = first +perPageData;
-                last = last +perPageData;
-    
-                if (page == pages) {
-            
-                  interaction.editReply({
-                    embeds: [
-                      embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
-                    ],
-                    components: [
-                      new MessageActionRow({
-                        components: [
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: false }),
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: true }),
-                          new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
-                        ],
-                      }),
-                    ],
-                  });
-        
-                } else if (page !== pages) {
-        
-                  interaction.editReply({
-                    embeds: [
-                      embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
-                    ],
-                    components: [
-                      new MessageActionRow({
-                        components: [
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: false }),
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
-                          new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
-                        ],
-                      }),
-                    ],
-                  });
-                };
-        
-                await button.deferUpdate();
-              };
-            });
-          });
-
-        } else if (ephemeral) {
-
-          let previous = ctx.case.random();
-          let next = ctx.case.random();
-
-          if (page == pages) {
-  
-            checkPages = interaction.reply({ 
-              ephemeral: true,
-              embeds: [
-                embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
-              ],
-              components: [
-                new MessageActionRow({
-                  components: [
-                    new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
-                    new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: true }),
-                  ],
-                }),
-              ],
-            });
-    
-          } else if (page !== pages) {
-        
-            checkPages = interaction.reply({
-              ephemeral: true,
-              embeds: [
-                embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
-              ],
-              components: [
-                new MessageActionRow({
-                  components: [
-                    new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
-                    new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
-                  ],
-                }),
-              ],
-            })
-          };
+            } else if (page !== pages) {
           
-          checkPages.then(async () => {
-    
-            let collector = interaction.channel.createMessageComponentCollector({ componentType: 'BUTTON', time: 3 * 60 * 1000, filter: (clicker: any) => clicker.user.id == interaction.user.id });
+              checkPages = interaction.reply({
+                ephemeral: false,
+                embeds: [
+                  embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                ],
+                components: [
+                  new MessageActionRow({
+                    components: [
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
+                      new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                    ],
+                  }),
+                ],
+              })
+            };
+            
+            checkPages.then(async () => {
       
-            collector.on('end', async () => {
+              let fetch: any = await interaction.fetchReply();
+              let collector = fetch.createMessageComponentCollector({ componentType: 'BUTTON', time: 3 * 60 * 1000 });
+        
+              collector.on('end', async () => {
+      
+                interaction.editReply({
+                  components: [
+                    new MessageActionRow({
+                      components: [
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: true }),
+                        new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: true }),
+                      ],
+                    }),
+                  ],
+                }).catch(() => null);
+              });
+      
+              collector.on('collect', async (button: any) => {
+  
+                if (button.user.id !== interaction.user.id) {
+                  
+                  await button.deferUpdate();
     
-              interaction.editReply({
+                  return button.followUp({ ephemeral: true, content: `${ctx.case.emoji(config.emoji.error)} You cannot use this button.` });
+                };
+        
+                if (button.customId == 'delete') {
+              
+                  await interaction.deleteReply();
+          
+                  await button.deferUpdate();
+      
+                } else if (button.customId == 'previous') {
+        
+                  page = page -1;
+      
+                  firstIndex = firstIndex -perPageData;
+                  lastIndex = lastIndex -perPageData;
+      
+                  if (page == 1) {
+              
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
+                            new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+          
+                  } else if (page !== 1) {
+          
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
+                            new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+                  };
+      
+                    await button.deferUpdate();
+                
+                } else if (button.customId == 'next') {
+        
+                  page = page +1;
+      
+                  firstIndex = firstIndex +perPageData;
+                  lastIndex = lastIndex +perPageData;
+      
+                  if (page == pages) {
+              
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: true }),
+                            new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+          
+                  } else if (page !== pages) {
+          
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
+                            new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+                  };
+          
+                  await button.deferUpdate();
+                };
+              });
+            });
+  
+          } else if (ephemeral) {
+  
+            let previous = ctx.case.random();
+            let next = ctx.case.random();
+  
+            if (page == pages) {
+    
+              checkPages = interaction.reply({ 
+                ephemeral: true,
+                embeds: [
+                  embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                ],
                 components: [
                   new MessageActionRow({
                     components: [
@@ -525,97 +492,578 @@ export default class Context {
                     ],
                   }),
                 ],
-              }).catch(() => null);
-            });
-    
-            collector.on('collect', async (button: any) => {
+              });
       
-              if (button.customId == previous) {
-      
-                page = page -1;
-    
-                first = first -perPageData;
-                last = last -perPageData;
-    
-                if (page == 1) {
+            } else if (page !== pages) {
+          
+              checkPages = interaction.reply({
+                ephemeral: true,
+                embeds: [
+                  embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                ],
+                components: [
+                  new MessageActionRow({
+                    components: [
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
+                    ],
+                  }),
+                ],
+              })
+            };
             
+            checkPages.then(async () => {
+      
+              let collector = interaction.channel.createMessageComponentCollector({ componentType: 'BUTTON', time: 3 * 60 * 1000, filter: (clicker: any) => clicker.user.id == interaction.user.id });
+        
+              collector.on('end', async () => {
+      
+                interaction.editReply({
+                  components: [
+                    new MessageActionRow({
+                      components: [
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: true }),
+                      ],
+                    }),
+                  ],
+                }).catch(() => null);
+              });
+      
+              collector.on('collect', async (button: any) => {
+        
+                if (button.customId == previous) {
+        
+                  page = page -1;
+      
+                  firstIndex = firstIndex -perPageData;
+                  lastIndex = lastIndex -perPageData;
+      
+                  if (page == 1) {
+              
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+          
+                  } else if (page !== 1) {
+          
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+                  };
+      
+                    await button.deferUpdate();
+                
+                } else if (button.customId == next) {
+        
+                  page = page +1;
+      
+                  firstIndex = firstIndex +perPageData;
+                  lastIndex = lastIndex +perPageData;
+      
+                  if (page == pages) {
+              
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: true }),
+                          ],
+                        }),
+                      ],
+                    });
+          
+                  } else if (page !== pages) {
+          
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+                  };
+          
+                  await button.deferUpdate();
+                };
+              });
+            });
+          };
+
+        } else if (fastSkip) {
+
+          if (!ephemeral) {
+
+            if (page == pages) {
+    
+              checkPages = interaction.reply({ 
+                ephemeral: false,
+                embeds: [
+                  embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                ],
+                components: [
+                  new MessageActionRow({
+                    components: [
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: 'first', disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: 'last', disabled: true }),
+                      new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                    ],
+                  }),
+                ],
+              });
+      
+            } else if (page !== pages) {
+          
+              checkPages = interaction.reply({
+                ephemeral: false,
+                embeds: [
+                  embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                ],
+                components: [
+                  new MessageActionRow({
+                    components: [
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: 'first', disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: 'last', disabled: false }),
+                      new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                    ],
+                  }),
+                ],
+              })
+            };
+            
+            checkPages.then(async () => {
+      
+              let fetch: any = await interaction.fetchReply();
+              let collector = fetch.createMessageComponentCollector({ componentType: 'BUTTON', time: 3 * 60 * 1000 });
+        
+              collector.on('end', async () => {
+      
+                interaction.editReply({
+                  components: [
+                    new MessageActionRow({
+                      components: [
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: 'first', disabled: true }),
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: true }),
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: 'last', disabled: true }),
+                        new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: true }),
+                      ],
+                    }),
+                  ],
+                }).catch(() => null);
+              });
+      
+              collector.on('collect', async (button: any) => {
+  
+                if (button.user.id !== interaction.user.id) {
+                  
+                  await button.deferUpdate();
+    
+                  return button.followUp({ ephemeral: true, content: `${ctx.case.emoji(config.emoji.error)} You cannot use this button.` });
+                };
+        
+                if (button.customId == 'delete') {
+              
+                  await interaction.deleteReply();
+          
+                  await button.deferUpdate();
+
+                } else if (button.customId == 'first') {
+        
+                  page = 1;
+        
+                  firstIndex = 0;
+                  lastIndex = perPageData;
+
                   interaction.editReply({
                     embeds: [
-                      embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
                     ],
                     components: [
                       new MessageActionRow({
                         components: [
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: 'first', disabled: true }),
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: 'last', disabled: false }),
+                          new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                        ],
+                      }),
+                    ],
+                  });
+          
+                  await button.deferUpdate();
+      
+                } else if (button.customId == 'previous') {
+        
+                  page = page -1;
+      
+                  firstIndex = firstIndex -perPageData;
+                  lastIndex = lastIndex -perPageData;
+      
+                  if (page == 1) {
+              
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: 'first', disabled: true }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: true }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: 'last', disabled: false }),
+                            new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+          
+                  } else if (page !== 1) {
+          
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: 'first', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: 'last', disabled: false }),
+                            new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+                  };
+      
+                    await button.deferUpdate();
+                
+                } else if (button.customId == 'next') {
+        
+                  page = page +1;
+      
+                  firstIndex = firstIndex +perPageData;
+                  lastIndex = lastIndex +perPageData;
+      
+                  if (page == pages) {
+              
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: 'first', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: true }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: 'last', disabled: true }),
+                            new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+          
+                  } else if (page !== pages) {
+          
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: 'first', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: 'last', disabled: false }),
+                            new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+                  };
+          
+                  await button.deferUpdate();
+
+                } else if (button.customId == 'last') {
+        
+                  page = pages;
+      
+                  firstIndex = perPageData * pages -perPageData;
+                  lastIndex = perPageData * pages;
+
+                  interaction.editReply({
+                    embeds: [
+                      embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                    ],
+                    components: [
+                      new MessageActionRow({
+                        components: [
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: 'first', disabled: false }),
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: 'previous', disabled: false }),
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: 'next', disabled: true }),
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: 'last', disabled: true }),
+                          new MessageButton({ style: 'DANGER', emoji: config.emoji.button.delete, customId: 'delete', disabled: false }),
+                        ],
+                      }),
+                    ],
+                  });
+          
+                  await button.deferUpdate();
+                };
+              });
+            });
+  
+          } else if (ephemeral) {
+  
+            let first = ctx.case.random();
+            let previous = ctx.case.random();
+            let next = ctx.case.random();
+            let last = ctx.case.random();
+  
+            if (page == pages) {
+    
+              checkPages = interaction.reply({ 
+                ephemeral: true,
+                embeds: [
+                  embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                ],
+                components: [
+                  new MessageActionRow({
+                    components: [
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: first, disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: last, disabled: true }),
+                    ],
+                  }),
+                ],
+              });
+      
+            } else if (page !== pages) {
+          
+              checkPages = interaction.reply({
+                ephemeral: true,
+                embeds: [
+                  embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                ],
+                components: [
+                  new MessageActionRow({
+                    components: [
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: first, disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
+                      new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: last, disabled: false }),
+                    ],
+                  }),
+                ],
+              })
+            };
+            
+            checkPages.then(async () => {
+      
+              let collector = interaction.channel.createMessageComponentCollector({ componentType: 'BUTTON', time: 3 * 60 * 1000, filter: (clicker: any) => clicker.user.id == interaction.user.id });
+        
+              collector.on('end', async () => {
+      
+                interaction.editReply({
+                  components: [
+                    new MessageActionRow({
+                      components: [
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: true }),
+                      ],
+                    }),
+                  ],
+                }).catch(() => null);
+              });
+      
+              collector.on('collect', async (button: any) => {
+
+                if (button.customId == 'first') {
+        
+                  page = 1;
+      
+                  firstIndex = 0;
+                  lastIndex = perPageData;
+  
+                  interaction.editReply({
+                    embeds: [
+                      embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                    ],
+                    components: [
+                      new MessageActionRow({
+                        components: [
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: first, disabled: true }),
                           new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
                           new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: last, disabled: false }),
                         ],
                       }),
                     ],
                   });
-        
-                } else if (page !== 1) {
-        
-                  interaction.editReply({
-                    embeds: [
-                      embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
-                    ],
-                    components: [
-                      new MessageActionRow({
-                        components: [
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: false }),
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
-                        ],
-                      }),
-                    ],
-                  });
-                };
-    
+          
                   await button.deferUpdate();
-              
-              } else if (button.customId == next) {
+        
+                } else if (button.customId == previous) {
+        
+                  page = page -1;
       
-                page = page +1;
-    
-                first = first +perPageData;
-                last = last +perPageData;
-    
-                if (page == pages) {
-            
+                  firstIndex = firstIndex -perPageData;
+                  lastIndex = lastIndex -perPageData;
+      
+                  if (page == 1) {
+              
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: first, disabled: true }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: last, disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+          
+                  } else if (page !== 1) {
+          
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: first, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: last, disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+                  };
+      
+                    await button.deferUpdate();
+                
+                } else if (button.customId == next) {
+        
+                  page = page +1;
+      
+                  first = first +perPageData;
+                  last = last +perPageData;
+      
+                  if (page == pages) {
+              
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: first, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: true }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: last, disabled: true }),
+                          ],
+                        }),
+                      ],
+                    });
+          
+                  } else if (page !== pages) {
+          
+                    interaction.editReply({
+                      embeds: [
+                        embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      ],
+                      components: [
+                        new MessageActionRow({
+                          components: [
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: first, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
+                            new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: last, disabled: false }),
+                          ],
+                        }),
+                      ],
+                    });
+                  };
+          
+                  await button.deferUpdate();
+
+                } else if (button.customId == last) {
+        
+                  page = pages;
+      
+                  firstIndex = perPageData * pages -perPageData;
+                  lastIndex = perPageData * pages;
+
                   interaction.editReply({
                     embeds: [
-                      embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
+                      embed.setDescription(array.slice(firstIndex, lastIndex).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
                     ],
                     components: [
                       new MessageActionRow({
                         components: [
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: first, disabled: false }),
                           new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: false }),
                           new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: true }),
+                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: last, disabled: true }),
                         ],
                       }),
                     ],
                   });
-        
-                } else if (page !== pages) {
-        
-                  interaction.editReply({
-                    embeds: [
-                      embed.setDescription(array.slice(first, last).join(`\n`)).setFooter({ text: `Page ${page} of ${pages}` }),
-                    ],
-                    components: [
-                      new MessageActionRow({
-                        components: [
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: false }),
-                          new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: false }),
-                        ],
-                      }),
-                    ],
-                  });
+          
+                  await button.deferUpdate();
                 };
-        
-                await button.deferUpdate();
-              };
+              });
             });
-          });
+          };
         };
       },
 
