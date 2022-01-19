@@ -909,8 +909,10 @@ export default class Context {
                   components: [
                     new MessageActionRow({
                       components: [
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.first, customId: first, disabled: true }),
                         new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.previous, customId: previous, disabled: true }),
                         new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.next, customId: next, disabled: true }),
+                        new MessageButton({ style: 'SECONDARY', emoji: config.emoji.button.last, customId: last, disabled: true }),
                       ],
                     }),
                   ],
@@ -994,8 +996,8 @@ export default class Context {
         
                   page = page +1;
       
-                  first = first +perPageData;
-                  last = last +perPageData;
+                  firstIndex = firstIndex +perPageData;
+                  lastIndex = lastIndex +perPageData;
       
                   if (page == pages) {
               
