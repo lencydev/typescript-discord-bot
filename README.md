@@ -13,7 +13,7 @@
         Fill in the required fields.
         <ul dir="auto">
           <li>
-            To download the emojis used in the project, <a href="https://github.com/lencydev/typescript-discord-bot/tree/main/emojis">click here</a>.
+            <a href="https://github.com/lencydev/typescript-discord-bot/tree/main/emojis">Click to download</a> the emojis used in the project.
           </li>
         </ul>
       </li>
