@@ -13,7 +13,7 @@
         Fill in the required fields.
         <ul dir="auto">
           <li>
-            You can download the used emojis from the discord server in my profile.
+            To download the emojis used in the project, <a href="https://github.com/lencydev/typescript-discord-bot/tree/main/emojis">click here</a>.
           </li>
         </ul>
       </li>
