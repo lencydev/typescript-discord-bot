@@ -919,7 +919,7 @@ export default class Context {
       
               collector.on('collect', async (button: any) => {
 
-                if (button.customId == 'first') {
+                if (button.customId == first) {
         
                   page = 1;
       
