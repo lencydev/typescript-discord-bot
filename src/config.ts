@@ -31,8 +31,6 @@ export default {
 
   emoji: {
 
-    blank: '875274727965462528' as string,
-
     success: '931054465480540190' as string,
     error: '931054474158542909' as string,
 
