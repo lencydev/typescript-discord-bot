@@ -13,13 +13,13 @@ export default class extends Command {
         {
           name: 'code',
           description: 'Code in TypeScript language.',
-          type: 3,
+          type: 'STRING',
           required: true,
         },
         {
           name: 'ephemeral',
           description: 'Ephemeral response.',
-          type: 3,
+          type: 'STRING',
           required: false,
           choices: [
             { name: 'true', value: 'true' },
@@ -44,12 +44,18 @@ export default class extends Command {
 
   async execute (ctx: Context) {
 
+    function clean (value: any) {
+  
+      if (typeof (value) == 'string') return value.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203));
+      else return value;
+    };
+
     try {
   
       let code = ctx.interaction.options.getString('code');
       let ephemeral = ctx.interaction.options.getString('ephemeral');
 
-      let evaled = ctx.module.util.inspect(eval(code)).replaceAll(ctx.config.data.token, `❌`).replaceAll(ctx.config.data.database, `❌`);
+      let evaled = ctx.module.util.inspect(await eval(await `(async () => ${code})()`)).replaceAll(ctx.config.data.token, `❌`).replaceAll(ctx.config.data.database, `❌`);
 
       ctx.menu.eval({
         ephemeral: !ephemeral || ephemeral == 'true' ? true : false,
@@ -68,12 +74,6 @@ export default class extends Command {
     } catch (error) {
   
       ctx.interaction.reply({ ephemeral: true, content: `\`\`\`js\n${clean(error).length > 2000 ? `${clean(error).slice(0, 2000)}...` : `${clean(error)}`}\n\`\`\`` });
-    };
-
-    function clean (text: any) {
-  
-      if (typeof (text) == 'string') return text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203));
-      else return text;
     };
   };
 };
