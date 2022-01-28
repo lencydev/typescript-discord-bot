@@ -8,14 +8,14 @@ export interface CommandOptions {
   description?: string;
   options?: ApplicationCommandOptionData[];
 
-  cooldown?: any | boolean;
+  cooldown?: { time: string; perGuild: boolean } | false;
 
-  category?: string;
-  usage?: string[] | boolean;
+  category?: 'developer' | 'moderation' | 'none';
+  usage?: string[] | false;
 
   ownerOnly?: boolean;
-  userPermissions?: PermissionString[] | boolean;
-  clientPermissions?: PermissionString[] | boolean;
+  userPermissions?: PermissionString[] | false;
+  clientPermissions?: PermissionString[] | false;
 
   enabled?: boolean;
   developerOnly?: boolean;
@@ -53,7 +53,7 @@ export default abstract class Command {
 
     this.cooldown = command.cooldown ?? false;
 
-    this.category = command.category ?? 'None';
+    this.category = command.category ?? 'none';
     this.usage = command.usage ?? false;
 
     this.ownerOnly = command.ownerOnly ?? false;
