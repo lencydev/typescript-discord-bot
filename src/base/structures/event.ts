@@ -1,10 +1,10 @@
 import Client from '../client';
 
-import { Awaitable } from 'discord.js';
+import { ClientEvents, Awaitable } from 'discord.js';
 
 export interface EventOptions {
 
-  name: string;
+  name: keyof ClientEvents;
   enabled?: boolean;
 };
 
