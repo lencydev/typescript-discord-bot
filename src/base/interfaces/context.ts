@@ -106,15 +106,15 @@ export default class Context {
         return client.emojis.cache.get(value);
       },
 
-      time (value: string): any {
+      time (value: string): number {
 
         try {
 
           let values: string[] = value.split(` `);
           let blockedArguments: string[] = [`-`, `.`, `ms`, `msec`, `msecs`, `milisecond`, `miliseconds`]
 
-          let result: any = 0;
-          let input: any;
+          let result: number = 0;
+          let input: number;
     
           for (let value of values) {
 
