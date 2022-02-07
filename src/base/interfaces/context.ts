@@ -106,26 +106,29 @@ export default class Context {
         return client.emojis.cache.get(value);
       },
 
-      time (value: any) {
+      time (value: string): any {
 
         try {
-  
-          if (value.startsWith(`-`) || value.endsWith(`ms`) || value.endsWith(`msec`) || value.endsWith(`msecs`) || value.endsWith(`milisecond`) || value.endsWith(`miliseconds`)) return;
-  
-          let values = value.split(` `);
-        
+
+          let values: string[] = value.split(` `);
+          let blockedArguments: string[] = [`-`, `.`, `ms`, `msec`, `msecs`, `milisecond`, `miliseconds`]
+
           let result: any = 0;
-          let input;
+          let input: any;
     
-          values.map((value: any) => {
-    
+          for (let value of values) {
+
+            if (!ms(value)) return;
+            if (!isNaN(Number(value))) return;
+            if (blockedArguments.some((argument) => value.includes(argument))) return;
+
             input = ms(value);
             result = input + result;
-          });
+          };
   
           return result;
   
-        } catch (error) {
+        } catch {
   
           return;
         };
