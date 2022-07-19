@@ -1,0 +1,47 @@
+{
+  "ts-node": {
+    "transpileOnly": true,
+  },
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "lib": [ "ESNext", "ES6", "DOM" ],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": false,
+    "sourceMap": false,
+    "strict": true,
+    "strictNullChecks": false,
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "rootDir": "./",
+    "outDir": "./build/",
+    "paths": {
+      "@discord": [ "./src/base/interfaces/discord.ts" ],
+
+      "@package": [ "./package.json" ],
+      "@client": [ "./src/base/client.ts" ],
+      "@context": [ "./src/base/interfaces/context/context.ts" ],
+
+      "@app": [ "./src/base/structures/app.ts" ],
+      "@command": [ "./src/base/structures/command.ts" ],
+      "@event": [ "./src/base/structures/event.ts" ],
+      "@handler": [ "./src/base/structures/handler.ts" ],
+
+      "@config": [ "./src/base/config/export.ts" ],
+      "@schemas": [ "./src/base/schemas/export.ts" ],
+      "@assets/*": [ "./src/base/assets/*" ],
+      "@handlers/*": [ "./src/base/handlers/*" ],
+      "@languages/*": [ "./src/base/languages/*" ],
+      "@loaders/*": [ "./src/base/loaders/*" ],
+    },
+  },
+  "include": [
+    "./src/",
+  ],
+  "exclude": [
+    "./node_modules/",
+  ],
+}
