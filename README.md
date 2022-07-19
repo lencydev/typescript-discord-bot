@@ -7,7 +7,7 @@
 
 # Bilgi
 - Proje yüklenmeden önce test edilmiştir herhangi bir hata bulunmuyor.
-- Context dosyasının içinde işe yarar bir çok fonksiyon bulunuyor ek olarak prototype fonksiyonları için loaders/prototypes.ts dosyasına bakın.
+- [context.ts](https://github.com/lencydev/typescript-discord-bot/blob/main/src/base/interfaces/context/context.ts) dosyasının içinde işe yarar bir çok fonksiyon bulunuyor ek olarak prototype fonksiyonları için [prototypes.ts](https://github.com/lencydev/typescript-discord-bot/blob/main/src/base/loaders/prototypes.ts) dosyasına bakın.
 
 # Komutlar
 ![](https://lency.is-a.fail/5CiWgXlz2.png)
