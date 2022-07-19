@@ -1,6 +1,6 @@
 import { Context } from '@context';
 
-import { Color, Emoji} from '@config';
+import { Color, Emoji } from '@config';
 
 import {
   CommandInteraction,
