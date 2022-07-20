@@ -1,5 +1,6 @@
 ### Hata veya sorular için: Léncy#0963
 # Kurulum
+### typescript ve ts-node kurulu değilse; `npm i -g ts-node typescript`
 - npm i
 - npm i --only=dev
 - npm i --save-dev @types/discord.js (hata alıyorsanız kullanın)
