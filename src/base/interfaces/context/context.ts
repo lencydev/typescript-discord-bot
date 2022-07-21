@@ -23,7 +23,6 @@ import {
   MessageActionRowComponent,
   Message,
   InteractionCollector,
-  APIMessage,
   Modal,
   TextInput,
   ComponentType,
@@ -500,118 +499,120 @@ export class Context {
           return [ newEmbed.setFooter({ text: `Page: ${current.page}/${pages}`}) ];
         };
       
-        await interaction.reply({ ephemeral, embeds: await embed(), components: await components(), fetchReply: true }).then((fetch: Message | APIMessage) => {
-      
-          let collector: InteractionCollector<ButtonInteraction> = (fetch as Message).createMessageComponentCollector({ componentType: ComponentType.Button, time: 5 * 60 * 1000 });
-          let collector2: InteractionCollector<SelectMenuInteraction> = (fetch as Message).createMessageComponentCollector({ componentType: ComponentType.SelectMenu, filter: (selectMenu: SelectMenuInteraction) => selectMenu.customId === 'sort', time: 5 * 60 * 1000 });
-          let collector3: InteractionCollector<SelectMenuInteraction> = (fetch as Message).createMessageComponentCollector({ componentType: ComponentType.SelectMenu, filter: (selectMenu: SelectMenuInteraction) => selectMenu.customId === 'list', time: 5 * 60 * 1000 });
-      
-          collector.on('end', async () => await interaction.editReply({ components: await components(true) }).catch(() => undefined));
-          
-          collector.on('collect', async (button: ButtonInteraction) => {
-      
-            if (!users.some((user: User) => user.id === button.user.id)) {
-      
-              await button.deferUpdate();
-              
-              await button.error_reply({ content: `You cannot use this button.` }); return;
-            };
-      
-            let id: ButtonNames = button.customId as ButtonNames;
-      
-            if (id === 'previous') current.page--, current.first = current.first -pageSize, current.last = current.last -pageSize;
-            if (id === 'next') current.page++, current.first = current.first +pageSize, current.last = current.last +pageSize;
-            if (id === 'delete') return await interaction.deleteReply();
-      
-            if (id === 'search') {
-      
-              await button.showModal(
-                new Modal({ custom_id: 'page-selection', title: `Page Selection` }).addComponents(
-                  new ActionRow<TextInput>().addComponents(
-                    new TextInput({
-                      type: 4,
-                      style: 1,
-                      custom_id: `page`,
-                      label: `Select Page (1-${pages})`,
-                      placeholder: `1-${pages}`,
-                      value: String(current.page),
-                      min_length: 1,
-                      max_length: String(pages).length,
-                      required: true,
-                    }),
-                  ),
-                ),
-              );
-      
-              return await button.awaitModalSubmit({ filter: (modal: ModalSubmitInteraction) => modal.customId === 'page-selection', time: 5 * 60 * 1000 }).then(async (modal: ModalSubmitInteraction) => {
+        let message: Message;
 
-                let fields = {
-                  page: Number(modal.fields.getTextInputValue('page')),
-                };
-      
-                if (isNaN(fields.page) || fields.page > pages) return await modal.error_reply({ content: `The value does not fit the format.` });
-                if (fields.page === current.page) return await modal.error_reply({ content: `Enter page number other than the selected page.` });
-      
-                current.page = fields.page;
-      
-                current.first = current.page * pageSize -pageSize;
-                current.last = current.page * pageSize;
-      
-                await interaction.editReply({ embeds: await embed(), components: await components() });
-      
-                if (modal.isFromMessage()) await modal.deferUpdate();
-              }).catch(() => undefined);
-            };
-      
-            await interaction.editReply({ embeds: await embed(), components: await components() });
-      
+        if (interaction.replied) message = await interaction.editReply({ content: null, embeds: await embed(), components: await components() });
+        if (!interaction.replied) message = await interaction.reply({ ephemeral, embeds: await embed(), components: await components(), fetchReply: true });
+        
+        let collector: InteractionCollector<ButtonInteraction> = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 5 * 60 * 1000 });
+        let collector2: InteractionCollector<SelectMenuInteraction> = message.createMessageComponentCollector({ componentType: ComponentType.SelectMenu, filter: (selectMenu: SelectMenuInteraction) => selectMenu.customId === 'sort', time: 5 * 60 * 1000 });
+        let collector3: InteractionCollector<SelectMenuInteraction> = message.createMessageComponentCollector({ componentType: ComponentType.SelectMenu, filter: (selectMenu: SelectMenuInteraction) => selectMenu.customId === 'list', time: 5 * 60 * 1000 });
+    
+        collector.on('end', async () => await interaction.editReply({ components: await components(true) }).catch(() => undefined));
+        
+        collector.on('collect', async (button: ButtonInteraction) => {
+    
+          if (!users.some((user: User) => user.id === button.user.id)) {
+    
             await button.deferUpdate();
-          });
-      
-          collector2.on('collect', async (selectMenu: SelectMenuInteraction) => {
             
-            if (!users.some((user: User) => user.id === selectMenu.user.id)) {
-      
-              await selectMenu.deferUpdate();
-              
-              await selectMenu.error_reply({ content: `You cannot use this select menu.` }); return;
-            };
-      
-            current.sort = Number(selectMenu.values[0]);
-      
-            menu = (await menus(sorts ? sorts[current.sort].sort : undefined));
-            value = menu[current.menu].value;
-      
-            await interaction.editReply({ embeds: await embed(), components: await components() });
-      
-            await selectMenu.deferUpdate();
-          });
-      
-          collector3.on('collect', async (selectMenu: SelectMenuInteraction) => {
-            
-            if (!users.some((user: User) => user.id === selectMenu.user.id)) {
-      
-              await selectMenu.deferUpdate();
-              
-              await selectMenu.error_reply({ content: `You cannot use this select menu.` }); return;
-            };
+            await button.error_reply({ content: `You cannot use this button.` }); return;
+          };
+    
+          let id: ButtonNames = button.customId as ButtonNames;
+    
+          if (id === 'previous') current.page--, current.first = current.first -pageSize, current.last = current.last -pageSize;
+          if (id === 'next') current.page++, current.first = current.first +pageSize, current.last = current.last +pageSize;
+          if (id === 'delete') return await interaction.deleteReply();
+    
+          if (id === 'search') {
+    
+            await button.showModal(
+              new Modal({ custom_id: 'page-selection', title: `Page Selection` }).addComponents(
+                new ActionRow<TextInput>().addComponents(
+                  new TextInput({
+                    type: 4,
+                    style: 1,
+                    custom_id: `page`,
+                    label: `Select Page (1-${pages})`,
+                    placeholder: `1-${pages}`,
+                    value: String(current.page),
+                    min_length: 1,
+                    max_length: String(pages).length,
+                    required: true,
+                  }),
+                ),
+              ),
+            );
+    
+            return await button.awaitModalSubmit({ filter: (modal: ModalSubmitInteraction) => modal.customId === 'page-selection', time: 5 * 60 * 1000 }).then(async (modal: ModalSubmitInteraction) => {
 
-            if (menu[Number(selectMenu.values[0])].value.length < 1) return await selectMenu.error_reply({ content: `Not enough data was found.` }); 
-      
-            current.menu = Number(selectMenu.values[0]);
-            current.page = 1;
-      
-            current.first = 0;
-            current.last = pageSize;
-      
-            value = menu[current.menu].value;
-      
-            pages = parseArray(value) ? Math.ceil(value.length / pageSize) : value.length;
-      
-            await interaction.editReply({ embeds: await embed(), components: await components() });
-      
+              let fields = {
+                page: Number(modal.fields.getTextInputValue('page')),
+              };
+    
+              if (isNaN(fields.page) || fields.page > pages) return await modal.error_reply({ content: `The value does not fit the format.` });
+              if (fields.page === current.page) return await modal.error_reply({ content: `Enter page number other than the selected page.` });
+    
+              current.page = fields.page;
+    
+              current.first = current.page * pageSize -pageSize;
+              current.last = current.page * pageSize;
+    
+              await interaction.editReply({ embeds: await embed(), components: await components() });
+    
+              if (modal.isFromMessage()) await modal.deferUpdate();
+            }).catch(() => undefined);
+          };
+    
+          await interaction.editReply({ embeds: await embed(), components: await components() });
+    
+          await button.deferUpdate();
+        });
+    
+        collector2.on('collect', async (selectMenu: SelectMenuInteraction) => {
+          
+          if (!users.some((user: User) => user.id === selectMenu.user.id)) {
+    
             await selectMenu.deferUpdate();
-          });
+            
+            await selectMenu.error_reply({ content: `You cannot use this select menu.` }); return;
+          };
+    
+          current.sort = Number(selectMenu.values[0]);
+    
+          menu = (await menus(sorts ? sorts[current.sort].sort : undefined));
+          value = menu[current.menu].value;
+    
+          await interaction.editReply({ embeds: await embed(), components: await components() });
+    
+          await selectMenu.deferUpdate();
+        });
+    
+        collector3.on('collect', async (selectMenu: SelectMenuInteraction) => {
+          
+          if (!users.some((user: User) => user.id === selectMenu.user.id)) {
+    
+            await selectMenu.deferUpdate();
+            
+            await selectMenu.error_reply({ content: `You cannot use this select menu.` }); return;
+          };
+
+          if (menu[Number(selectMenu.values[0])].value.length < 1) return await selectMenu.error_reply({ content: `Not enough data was found.` }); 
+    
+          current.menu = Number(selectMenu.values[0]);
+          current.page = 1;
+    
+          current.first = 0;
+          current.last = pageSize;
+    
+          value = menu[current.menu].value;
+    
+          pages = parseArray(value) ? Math.ceil(value.length / pageSize) : value.length;
+    
+          await interaction.editReply({ embeds: await embed(), components: await components() });
+    
+          await selectMenu.deferUpdate();
         });
       },
 
@@ -796,159 +797,161 @@ export class Context {
           return [ newEmbed.setFooter({ text: `Page: ${current.page}/${pages}`}) ];
         };
       
-        await interaction.reply({ ephemeral, embeds: await embed(), components: await components(), fetchReply: true }).then((fetch: Message | APIMessage) => {
-      
-          let collector: InteractionCollector<ButtonInteraction> = (fetch as Message).createMessageComponentCollector({ componentType: ComponentType.Button, time: 5 * 60 * 1000 });
-          let collector2: InteractionCollector<SelectMenuInteraction> = (fetch as Message).createMessageComponentCollector({ componentType: ComponentType.SelectMenu, filter: (selectMenu: SelectMenuInteraction) => selectMenu.customId === 'sort', time: 5 * 60 * 1000 });
-          let collector3: InteractionCollector<SelectMenuInteraction> = (fetch as Message).createMessageComponentCollector({ componentType: ComponentType.SelectMenu, filter: (selectMenu: SelectMenuInteraction) => selectMenu.customId === 'list', time: 5 * 60 * 1000 });
-          let collector4: InteractionCollector<SelectMenuInteraction> = (fetch as Message).createMessageComponentCollector({ componentType: ComponentType.SelectMenu, filter: (selectMenu: SelectMenuInteraction) => selectMenu.customId === 'transaction', time: 5 * 60 * 1000 });
+        let message: Message;
 
-          collector.on('end', async () => await interaction.editReply({ components: await components(true) }).catch(() => undefined));
-          
-          collector.on('collect', async (button: ButtonInteraction) => {
+        if (interaction.replied) message = await interaction.editReply({ content: null, embeds: await embed(), components: await components() });
+        if (!interaction.replied) message = await interaction.reply({ ephemeral, embeds: await embed(), components: await components(), fetchReply: true });
       
-            if (!users.some((user: User) => user.id === button.user.id)) {
-      
-              await button.deferUpdate();
-              
-              await button.error_reply({ ephemeral: true, content: `You cannot use this button.` }); return;
-            };
-      
-            let id: ButtonNames = button.customId as ButtonNames;
-      
-            if (id === 'previous') current.page--, current.first = current.first -pageSize, current.last = current.last -pageSize;
-            if (id === 'next') current.page++, current.first = current.first +pageSize, current.last = current.last +pageSize;
-            if (id === 'delete') return await interaction.deleteReply();
-      
-            if (id === 'search') {
-      
-              await button.showModal(
-                new Modal({ custom_id: 'page-selection', title: `Page Selection` }).addComponents(
-                  new ActionRow<TextInput>().addComponents(
-                    new TextInput({
-                      type: 4,
-                      style: 1,
-                      custom_id: `page`,
-                      label: `Select Page (1-${pages})`,
-                      placeholder: `1-${pages}`,
-                      value: String(current.page),
-                      min_length: 1,
-                      max_length: String(pages).length,
-                      required: true,
-                    }),
-                  ),
-                ),
-              );
-      
-              return await button.awaitModalSubmit({ filter: (modal: ModalSubmitInteraction) => modal.customId === 'page-selection', time: 5 * 60 * 1000 }).then(async (modal: ModalSubmitInteraction) => {
+        let collector: InteractionCollector<ButtonInteraction> = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 5 * 60 * 1000 });
+        let collector2: InteractionCollector<SelectMenuInteraction> = message.createMessageComponentCollector({ componentType: ComponentType.SelectMenu, filter: (selectMenu: SelectMenuInteraction) => selectMenu.customId === 'sort', time: 5 * 60 * 1000 });
+        let collector3: InteractionCollector<SelectMenuInteraction> = message.createMessageComponentCollector({ componentType: ComponentType.SelectMenu, filter: (selectMenu: SelectMenuInteraction) => selectMenu.customId === 'list', time: 5 * 60 * 1000 });
+        let collector4: InteractionCollector<SelectMenuInteraction> = message.createMessageComponentCollector({ componentType: ComponentType.SelectMenu, filter: (selectMenu: SelectMenuInteraction) => selectMenu.customId === 'transaction', time: 5 * 60 * 1000 });
 
-                let fields = {
-                  page: Number(modal.fields.getTextInputValue('page'))
-                };
-      
-                if (isNaN(fields.page) || fields.page > pages) return await modal.error_reply({ content: `The value does not fit the format.` });
-                if (fields.page === current.page) return await modal.error_reply({ content: `Enter page number other than the selected page.` });
-      
-                current.page = fields.page;
-      
-                current.first = current.page * pageSize -pageSize;
-                current.last = current.page * pageSize;
-      
-                await interaction.editReply({ embeds: await embed(), components: await components() });
-      
-                if (modal.isFromMessage()) await modal.deferUpdate();
-              }).catch(() => undefined);
-            };
-      
-            await interaction.editReply({ embeds: await embed(), components: await components() });
-      
+        collector.on('end', async () => await interaction.editReply({ components: await components(true) }).catch(() => undefined));
+        
+        collector.on('collect', async (button: ButtonInteraction) => {
+    
+          if (!users.some((user: User) => user.id === button.user.id)) {
+    
             await button.deferUpdate();
-          });
-      
-          collector2.on('collect', async (selectMenu: SelectMenuInteraction) => {
             
-            if (!users.some((user: User) => user.id === selectMenu.user.id)) {
-      
-              await selectMenu.deferUpdate();
-              
-              await selectMenu.error_reply({ content: `You cannot use this select menu.` }); return;
-            };
-      
-            current.sort = Number(selectMenu.values[0]);
+            await button.error_reply({ ephemeral: true, content: `You cannot use this button.` }); return;
+          };
+    
+          let id: ButtonNames = button.customId as ButtonNames;
+    
+          if (id === 'previous') current.page--, current.first = current.first -pageSize, current.last = current.last -pageSize;
+          if (id === 'next') current.page++, current.first = current.first +pageSize, current.last = current.last +pageSize;
+          if (id === 'delete') return await interaction.deleteReply();
+    
+          if (id === 'search') {
+    
+            await button.showModal(
+              new Modal({ custom_id: 'page-selection', title: `Page Selection` }).addComponents(
+                new ActionRow<TextInput>().addComponents(
+                  new TextInput({
+                    type: 4,
+                    style: 1,
+                    custom_id: `page`,
+                    label: `Select Page (1-${pages})`,
+                    placeholder: `1-${pages}`,
+                    value: String(current.page),
+                    min_length: 1,
+                    max_length: String(pages).length,
+                    required: true,
+                  }),
+                ),
+              ),
+            );
+    
+            return await button.awaitModalSubmit({ filter: (modal: ModalSubmitInteraction) => modal.customId === 'page-selection', time: 5 * 60 * 1000 }).then(async (modal: ModalSubmitInteraction) => {
 
-            transaction = transactions ? (await transactions.options(current.first, current.last, sorts ? sorts[current.sort].sort : undefined, filters ? filters[current.filter].filter : undefined)) : undefined;
-      
-            menu = (await menus(sorts ? sorts[current.sort].sort : undefined, filters ? filters : undefined));
-            value = menu[current.menu].value;
-      
-            await interaction.editReply({ embeds: await embed(), components: await components() });
-      
+              let fields = {
+                page: Number(modal.fields.getTextInputValue('page'))
+              };
+    
+              if (isNaN(fields.page) || fields.page > pages) return await modal.error_reply({ content: `The value does not fit the format.` });
+              if (fields.page === current.page) return await modal.error_reply({ content: `Enter page number other than the selected page.` });
+    
+              current.page = fields.page;
+    
+              current.first = current.page * pageSize -pageSize;
+              current.last = current.page * pageSize;
+    
+              await interaction.editReply({ embeds: await embed(), components: await components() });
+    
+              if (modal.isFromMessage()) await modal.deferUpdate();
+            }).catch(() => undefined);
+          };
+    
+          await interaction.editReply({ embeds: await embed(), components: await components() });
+    
+          await button.deferUpdate();
+        });
+    
+        collector2.on('collect', async (selectMenu: SelectMenuInteraction) => {
+          
+          if (!users.some((user: User) => user.id === selectMenu.user.id)) {
+    
             await selectMenu.deferUpdate();
-          });
-      
-          collector3.on('collect', async (selectMenu: SelectMenuInteraction) => {
             
-            if (!users.some((user: User) => user.id === selectMenu.user.id)) {
-      
-              await selectMenu.deferUpdate();
-              
-              await selectMenu.error_reply({ content: `You cannot use this select menu.` }); return;
-            };
+            await selectMenu.error_reply({ content: `You cannot use this select menu.` }); return;
+          };
+    
+          current.sort = Number(selectMenu.values[0]);
 
-            if (menu[Number(selectMenu.values[0])].value.length < 1) return await selectMenu.error_reply({ content: `Not enough data was found.` }); 
-      
-            current.filter = Number(selectMenu.values[0]);
-            current.menu = Number(selectMenu.values[0]);
-            current.page = 1;
-      
-            transaction = transactions ? (await transactions.options(current.first, current.last, sorts ? sorts[current.sort].sort : undefined, filters ? filters[current.filter].filter : undefined)) : undefined;
-
-            current.first = 0;
-            current.last = pageSize;
-      
-            value = menu[current.menu].value;
-      
-            pages = parseArray(value) ? Math.ceil(value.length / pageSize) : value.length;
-      
-            await interaction.editReply({ embeds: await embed(), components: await components() });
-      
+          transaction = transactions ? (await transactions.options(current.first, current.last, sorts ? sorts[current.sort].sort : undefined, filters ? filters[current.filter].filter : undefined)) : undefined;
+    
+          menu = (await menus(sorts ? sorts[current.sort].sort : undefined, filters ? filters : undefined));
+          value = menu[current.menu].value;
+    
+          await interaction.editReply({ embeds: await embed(), components: await components() });
+    
+          await selectMenu.deferUpdate();
+        });
+    
+        collector3.on('collect', async (selectMenu: SelectMenuInteraction) => {
+          
+          if (!users.some((user: User) => user.id === selectMenu.user.id)) {
+    
             await selectMenu.deferUpdate();
-          });
-
-          collector4.on('collect', async (selectMenu: SelectMenuInteraction) => {
             
-            if (!users.some((user: User) => user.id === selectMenu.user.id)) {
-      
-              await selectMenu.deferUpdate();
-              
-              await selectMenu.error_reply({ content: `You cannot use this select menu.` }); return;
-            };
-      
-            current.page = 1;
-      
-            current.first = 0;
-            current.last = pageSize;
+            await selectMenu.error_reply({ content: `You cannot use this select menu.` }); return;
+          };
 
-            if (value.length === 1) {
+          if (menu[Number(selectMenu.values[0])].value.length < 1) return await selectMenu.error_reply({ content: `Not enough data was found.` }); 
+    
+          current.filter = Number(selectMenu.values[0]);
+          current.menu = Number(selectMenu.values[0]);
+          current.page = 1;
+    
+          transaction = transactions ? (await transactions.options(current.first, current.last, sorts ? sorts[current.sort].sort : undefined, filters ? filters[current.filter].filter : undefined)) : undefined;
 
-              await selectMenu.deferUpdate();
+          current.first = 0;
+          current.last = pageSize;
+    
+          value = menu[current.menu].value;
+    
+          pages = parseArray(value) ? Math.ceil(value.length / pageSize) : value.length;
+    
+          await interaction.editReply({ embeds: await embed(), components: await components() });
+    
+          await selectMenu.deferUpdate();
+        });
 
-              await interaction.error_reply({ content: `Data cannot be deleted.` }); return;
-            };
-
-            await transaction[0].execute(await transactions.get(selectMenu.values[0]), selectMenu);
-
-            transaction = transactions ? (await transactions.options(current.first, current.last, sorts ? sorts[current.sort].sort : undefined, filters ? filters[current.filter].filter : undefined)) : undefined;
-
-            menu = (await menus(sorts ? sorts[current.sort].sort : undefined, filters ? filters : undefined));
-            value = menu[current.menu].value;
-      
-            pages = parseArray(value) ? Math.ceil(value.length / pageSize) : value.length;
-
-            await interaction.editReply({ embeds: await embed(), components: await components() });
-      
+        collector4.on('collect', async (selectMenu: SelectMenuInteraction) => {
+          
+          if (!users.some((user: User) => user.id === selectMenu.user.id)) {
+    
             await selectMenu.deferUpdate();
-          });
+            
+            await selectMenu.error_reply({ content: `You cannot use this select menu.` }); return;
+          };
+    
+          current.page = 1;
+    
+          current.first = 0;
+          current.last = pageSize;
+
+          if (value.length === 1) {
+
+            await selectMenu.deferUpdate();
+
+            await interaction.error_reply({ content: `Data cannot be deleted.` }); return;
+          };
+
+          await transaction[0].execute(await transactions.get(selectMenu.values[0]), selectMenu);
+
+          transaction = transactions ? (await transactions.options(current.first, current.last, sorts ? sorts[current.sort].sort : undefined, filters ? filters[current.filter].filter : undefined)) : undefined;
+
+          menu = (await menus(sorts ? sorts[current.sort].sort : undefined, filters ? filters : undefined));
+          value = menu[current.menu].value;
+    
+          pages = parseArray(value) ? Math.ceil(value.length / pageSize) : value.length;
+
+          await interaction.editReply({ embeds: await embed(), components: await components() });
+    
+          await selectMenu.deferUpdate();
         });
       },
 
@@ -1030,69 +1033,71 @@ export class Context {
           return [ newEmbed ];
         };
 
-        await interaction.reply({ ephemeral, embeds: embed(), components: components(), fetchReply: true }).then((fetch: Message | APIMessage) => {
+        let message: Message;
 
-          let collector: InteractionCollector<ButtonInteraction> = (fetch as Message).createMessageComponentCollector({ componentType: ComponentType.Button, time: 5 * 60 * 1000 });
+        if (interaction.replied) message = await interaction.editReply({ content: null, embeds: embed(), components: components() });
+        if (!interaction.replied) message = await interaction.reply({ ephemeral, embeds: embed(), components: components(), fetchReply: true });
 
-          collector.on('end', async () => await interaction.editReply({ components: components(true) }).catch(() => undefined));
-          
-          collector.on('collect', async (button: ButtonInteraction) => {
-  
-            if (!users.some((user: User) => user.id === button.user.id)) {
+        let collector: InteractionCollector<ButtonInteraction> = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 5 * 60 * 1000 });
 
-              await button.deferUpdate();
-              
-              await button.error_reply({ content: `You cannot use this button.` }); return;
-            };
-  
-            let id: ButtonNames = button.customId as ButtonNames;
-    
-            if (id === 'previous') page--, first = first -pageSize, last = last -pageSize;
-            if (id === 'next') page++, first = first +pageSize, last = last +pageSize;
-            if (id === 'delete') return await interaction.deleteReply();
+        collector.on('end', async () => await interaction.editReply({ components: components(true) }).catch(() => undefined));
+        
+        collector.on('collect', async (button: ButtonInteraction) => {
 
-            if (id === 'search') {
+          if (!users.some((user: User) => user.id === button.user.id)) {
 
-              await button.showModal(
-                new Modal({ custom_id: 'page-selection', title: `Page Selection` }).addComponents(
-                  new ActionRow<TextInput>().addComponents(
-                    new TextInput({
-                      type: 4,
-                      style: 1,
-                      custom_id: `page`,
-                      label: `Select Page (1-${pages})`,
-                      placeholder: `1-${pages}`,
-                      value: String(page),
-                      min_length: 1,
-                      max_length: String(pages).length,
-                      required: true,
-                    }),
-                  ),
-                ),
-              );
-
-              return await button.awaitModalSubmit({ filter: (modal: ModalSubmitInteraction) => modal.customId === 'page-selection', time: 5 * 60 * 1000 }).then(async (modal: ModalSubmitInteraction) => {
-
-                let pageValue: number = Number(modal.fields.getTextInputValue('page'));
-
-                if (isNaN(pageValue) || pageValue > pages) return await modal.error_reply({ content: `The value does not fit the format.` });
-                if (pageValue === page) return await modal.error_reply({ content: `Enter page number other than the selected page.` });
-
-                page = pageValue;
-
-                first = page * pageSize -pageSize;
-                last = page * pageSize;
-  
-                await interaction.editReply({ embeds: embed(), components: components() });
-
-                if (modal.isFromMessage()) await modal.deferUpdate();
-              }).catch(() => undefined);
-            };
-    
-            await interaction.editReply({ embeds: embed(), components: components() });
-  
             await button.deferUpdate();
-          });
+            
+            await button.error_reply({ content: `You cannot use this button.` }); return;
+          };
+
+          let id: ButtonNames = button.customId as ButtonNames;
+  
+          if (id === 'previous') page--, first = first -pageSize, last = last -pageSize;
+          if (id === 'next') page++, first = first +pageSize, last = last +pageSize;
+          if (id === 'delete') return await interaction.deleteReply();
+
+          if (id === 'search') {
+
+            await button.showModal(
+              new Modal({ custom_id: 'page-selection', title: `Page Selection` }).addComponents(
+                new ActionRow<TextInput>().addComponents(
+                  new TextInput({
+                    type: 4,
+                    style: 1,
+                    custom_id: `page`,
+                    label: `Select Page (1-${pages})`,
+                    placeholder: `1-${pages}`,
+                    value: String(page),
+                    min_length: 1,
+                    max_length: String(pages).length,
+                    required: true,
+                  }),
+                ),
+              ),
+            );
+
+            return await button.awaitModalSubmit({ filter: (modal: ModalSubmitInteraction) => modal.customId === 'page-selection', time: 5 * 60 * 1000 }).then(async (modal: ModalSubmitInteraction) => {
+
+              let pageValue: number = Number(modal.fields.getTextInputValue('page'));
+
+              if (isNaN(pageValue) || pageValue > pages) return await modal.error_reply({ content: `The value does not fit the format.` });
+              if (pageValue === page) return await modal.error_reply({ content: `Enter page number other than the selected page.` });
+
+              page = pageValue;
+
+              first = page * pageSize -pageSize;
+              last = page * pageSize;
+
+              await interaction.editReply({ embeds: embed(), components: components() });
+
+              if (modal.isFromMessage()) await modal.deferUpdate();
+            }).catch(() => undefined);
+          };
+  
+          await interaction.editReply({ embeds: embed(), components: components() });
+
+          await button.deferUpdate();
         });
       },
     };
