@@ -2,6 +2,8 @@ import { Context } from '@context';
 
 import { Handler } from '@handler';
 
+import { ClientEvents } from '@discord';
+
 import { sync } from 'glob';
 import { resolve } from 'path';
 
@@ -17,7 +19,7 @@ export default async function (ctx: Context): Promise<void> {
   
       if (!handler.enabled) return;
 
-      ctx.client.on(handler.type, async (...items: any[]) => await handler.execute(ctx, ...items));
+      ctx.client.on(handler.type, async (...items: ClientEvents[keyof ClientEvents]) => await handler.execute(ctx, ...items));
     }));
   };
 };
