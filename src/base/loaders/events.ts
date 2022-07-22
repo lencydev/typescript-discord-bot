@@ -4,6 +4,8 @@ import { Event } from '@event';
 
 import { Color } from '@config';
 
+import { ClientEvents } from '@discord';
+
 import { sync } from 'glob';
 import { resolve } from 'path';
 
@@ -23,7 +25,7 @@ export default async function (ctx: Context): Promise<void> {
 
       eventsData.push(`${ctx.terminal.color({ text: event.type, hex: Color.Terminal.Green })} ${ctx.terminal.color({ text: `(${file.split(`events/`)[1]})`, hex: Color.Terminal.Blue })}`);
 
-      ctx.client.on(event.type, async (...items: any[]) => await event.execute(ctx, ...items));
+      ctx.client.on(event.type, async (...items: ClientEvents[keyof ClientEvents]) => await event.execute(ctx, ...items));
 
       ctx.client.events.set(event.type, event);
     }));
