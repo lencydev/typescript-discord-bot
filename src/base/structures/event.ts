@@ -1,5 +1,7 @@
 import { Context } from '@context';
 
+import { ClientEvents } from '@discord';
+
 export abstract class Event {
 
   readonly type;
@@ -11,5 +13,5 @@ export abstract class Event {
     this.enabled = event.enabled ?? false;
   };
 
-  abstract execute (ctx: Context, ...items: any[]): Promise<void>;
+  abstract execute (ctx: Context, ...items: ClientEvents[keyof ClientEvents]): Promise<void>;
 };
