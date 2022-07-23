@@ -5,10 +5,7 @@
 - `npm i --only=dev`
 - `npm i --save-dev @types/discord.js` (hata alıyorsanız kullanın)
 - Config dosyasındaki tüm gerekli yerleri doldurmadan botu çalıştırmayın, hata verecektir.
-
-# Bilgi
-- Proje yüklenmeden önce test edilmiştir herhangi bir hata bulunmuyor.
-- [context.ts](https://github.com/lencydev/typescript-discord-bot/blob/main/src/base/interfaces/context/context.ts) dosyasının içinde işe yarar bir çok fonksiyon bulunuyor ek olarak prototype fonksiyonları için [prototypes.ts](https://github.com/lencydev/typescript-discord-bot/blob/main/src/base/loaders/prototypes.ts) dosyasına bakın.
+#### Proje yüklenmeden önce test edilmiştir herhangi bir hata bulunmuyor.
 
 # [Komutlar](https://github.com/lencydev/typescript-discord-bot/blob/main/src/interactions/commands/developer/eval.ts)
 ![](https://lency.is-a.fail/5CiWgXlz2.png)
